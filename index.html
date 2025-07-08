@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RUSSIAN MARKET - Dashboard Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #e94560; /* Reddish-pink */
+      --secondary-color: #32CD32; /* Lime Green */
+      --dark-bg: #0e1013;
+      --card-bg: #1c1f26;
+      --header-bg: #16181d;
+      --text-light: #f5f5f5;
+      --text-medium: #ccc;
+      --text-dark: #aaa;
+      --border-color: #2a2d34;
+      --shadow-light: rgba(0,0,0,0.4);
+      --shadow-medium: rgba(0,0,0,0.6);
+      --shadow-strong: rgba(0,0,0,0.7);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: relative;
+      overflow-y: auto; /* Allow vertical scrolling */
+    }
+
+    /* Modern Scrollbar Styling */
+    body::-webkit-scrollbar {
+      width: 0.75rem; /* Width of the scrollbar */
+    }
+
+    body::-webkit-scrollbar-track {
+      background: var(--dark-bg); /* Color of the track */
+      border-radius: 0.5rem;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--primary-color), #c23b53); /* Color of the scroll thumb */
+      border-radius: 0.5rem;
+      border: 2px solid var(--dark-bg); /* Space around thumb */
+      box-shadow: 0 0 0.5rem rgba(233, 69, 96, 0.5); /* Subtle glow */
+    }
+
+    body::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #ff4f71, var(--primary-color)); /* Lighter on hover */
+      box-shadow: 0 0 0.8rem rgba(233, 69, 96, 0.8); /* Stronger glow on hover */
+    }
+
+    canvas {
+      position: fixed; /* Changed to fixed so it stays in background during scroll */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    aside {
+      width: 100%;
+      background-color: var(--header-bg);
+      padding: 1.2rem 2rem; /* Responsive padding */
+      box-shadow: 0 0.125rem 0.5rem var(--shadow-medium);
+      display: flex;
+      /* Changed to flex-start to align items to the left */
+      justify-content: flex-start;
+      align-items: center;
+      flex-wrap: wrap; /* Allow wrapping on smaller screens */
+      border-bottom: 1px solid var(--border-color);
+      z-index: 2; /* Ensure aside stays above content during scroll */
+      position: sticky; /* Make header sticky */
+      top: 0;
+      gap: 2rem; /* Added gap between logo and nav for spacing */
+    }
+
+    aside .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    aside .logo-container:hover {
+        transform: scale(1.02);
+    }
+
+    aside h2 {
+      font-size: clamp(1.5rem, 5vw, 2.2rem); /* Responsive font size */
+      color: var(--text-light);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      text-shadow:
+        0 0 0.3rem var(--text-light),
+        0 0 0.6rem var(--text-light),
+        0 0 1.2rem var(--text-light);
+    }
+
+    aside h2 img {
+      width: clamp(2.5rem, 8vw, 3.2rem); /* Responsive logo size */
+      height: clamp(2.5rem, 8vw, 3.2rem);
+      background-color: var(--secondary-color);
+      border-radius: 50%;
+      padding: 0.4rem;
+      box-shadow:
+        0 0 0.6rem #228B22,
+        0 0 1.2rem #50C878,
+        0 0 2rem #808000;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+
+    aside nav {
+      display: flex;
+      gap: 1.5rem; /* Spaced out navigation items */
+      justify-content: flex-start; /* Ensure items within nav are left-aligned */
+      width: auto; /* Allow nav to shrink to content */
+    }
+
+    aside nav a {
+      display: block;
+      color: var(--text-medium);
+      text-decoration: none;
+      padding: 0.6rem 1rem;
+      transition: color 0.3s, background-color 0.3s, transform 0.2s;
+      border-radius: 0.3rem;
+      font-weight: bold;
+    }
+
+    aside nav a:hover {
+      color: var(--text-light);
+      background-color: var(--border-color);
+      transform: translateY(-0.1rem);
+    }
+
+    main {
+      flex-grow: 1;
+      padding: 2rem;
+      background-color: rgba(18, 20, 25, 0.95);
+      border-radius: 0.6rem;
+      box-shadow: 0 0.3rem 1rem var(--shadow-medium);
+      position: relative;
+      z-index: 1;
+      margin: 1.5rem auto; /* Center main content */
+      max-width: 75rem; /* Max width for better readability */
+      width: 90%; /* Responsive width */
+      box-sizing: border-box; /* Include padding in width */
+    }
+
+    .header-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      align-items: flex-start;
+    }
+
+    .username {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      font-weight: bold;
+      color: var(--primary-color);
+      text-shadow: 0 0 0.3rem rgba(233, 69, 96, 0.5);
+    }
+
+    .add-address-btn, .payment-buttons button, .product button, .product-detail-box button {
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(145deg, var(--primary-color), #c23b53);
+      color: var(--text-light);
+      border: none;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      font-family: 'Orbitron', sans-serif;
+      box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.4);
+    }
+
+    .add-address-btn:hover, .payment-buttons button:hover, .product button:hover, .product-detail-box button:hover {
+      background: linear-gradient(145deg, #ff4f71, var(--primary-color));
+      transform: translateY(-0.1rem);
+      box-shadow: 0 0.3rem 0.8rem rgba(0,0,0,0.6);
+    }
+
+    .add-address-btn:active, .payment-buttons button:active, .product button:active, .product-detail-box button:active {
+        transform: translateY(0);
+        box-shadow: inset 0 0.1rem 0.3rem rgba(0,0,0,0.5);
+    }
+
+    h1 {
+        font-size: clamp(1.8rem, 5vw, 2.5rem);
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        text-shadow: 0 0 0.5rem rgba(233, 69, 96, 0.3);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); /* Responsive min-width */
+      gap: 1.5rem;
+    }
+
+    .product {
+      background-color: var(--card-bg);
+      border-radius: 0.6rem;
+      padding: 1.2rem;
+      text-align: center;
+      box-shadow: 0 0.3rem 1rem var(--shadow-light);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border-color);
+    }
+
+    .product:hover {
+      transform: translateY(-0.3rem);
+      box-shadow: 0 0.5rem 1.2rem var(--shadow-medium);
+    }
+
+    .product img {
+      max-width: 100%;
+      height: 11.25rem; /* Fixed height for consistent image size */
+      object-fit: contain;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      background-color: var(--dark-bg);
+      padding: 0.6rem;
+      box-shadow: inset 0 0 0.5rem rgba(0,0,0,0.5);
+    }
+
+    .product h2 {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      margin: 0.6rem 0 0.5rem;
+      color: var(--text-light);
+    }
+
+    .product p {
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      color: var(--text-dark);
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    /* Product Detail Box Styling */
+    .product-detail-box {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      box-shadow: 0 0.3rem 1.25rem var(--shadow-strong);
+      margin-top: 1.5rem;
+      text-align: left; /* Align text left for better readability */
+      max-width: 50rem; /* Wider for details */
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    .product-detail-box .image-section {
+      flex: 1 1 40%; /* Take 40% width, flexible */
+      min-width: 15rem; /* Minimum width for image */
+      text-align: center;
+    }
+
+    .product-detail-box .image-section img {
+      max-width: 100%;
+      height: auto;
+      max-height: 25rem; /* Limit max height */
+      object-fit: contain;
+      border-radius: 0.5rem;
+      background-color: var(--dark-bg);
+      padding: 0.8rem;
+      box-shadow: inset 0 0 0.8rem rgba(0,0,0,0.5);
+    }
+
+    .product-detail-box .details-section {
+      flex: 1 1 50%; /* Take 50% width, flexible */
+      min-width: 18rem; /* Minimum width for details */
+    }
+
+    .product-detail-box h1,
+    .product-detail-box h2,
+    .product-detail-box h3 {
+      color: var(--primary-color);
+      margin-bottom: 0.8rem;
+      text-shadow: 0 0 0.3rem rgba(233, 69, 96, 0.3);
+    }
+
+    .product-detail-box .price {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .product-detail-box .description {
+      font-size: 1rem;
+      color: var(--text-medium);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .product-detail-box .option-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .product-detail-box .option-group h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.8rem;
+      color: var(--text-light);
+    }
+
+    .product-detail-box .options-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .product-detail-box .option-button {
+      padding: 0.6rem 1rem;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 0.3rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-medium);
+      font-weight: bold;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .product-detail-box .option-button:hover {
+      background-color: var(--border-color);
+      color: var(--text-light);
+      transform: translateY(-0.1rem);
+    }
+
+    .product-detail-box .option-button.selected {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0.5rem rgba(233, 69, 96, 0.5);
+      background-color: var(--primary-color);
+      color: var(--text-light);
+    }
+
+    .product-detail-box .color-option {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--border-color);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 0.1rem 0.3rem rgba(0,0,0,0.3);
+    }
+
+    .product-detail-box .color-option img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%; /* Keep image rounded within the circle */
+      padding: 0; /* Remove padding from inner image */
+      box-shadow: none; /* Remove shadow from inner image */
+    }
+
+    .product-detail-box .color-option.selected {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0.6rem var(--primary-color);
+      transform: scale(1.1);
+    }
+
+    .payment-box {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      box-shadow: 0 0.3rem 1.25rem var(--shadow-strong);
+      margin-top: 1.5rem;
+      text-align: center;
+      max-width: 37.5rem; /* 600px */
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .payment-box h1, .payment-box h2, .payment-box h3 {
+      margin-bottom: 1.25rem;
+      color: var(--primary-color);
+      text-shadow: 0 0 0.3rem rgba(233, 69, 96, 0.3);
+    }
+
+    .payment-box p {
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      margin-bottom: 1rem;
+    }
+
+    .payment-box input[type="text"], .payment-box input[type="email"], .payment-box input[type="tel"], .payment-box input[type="file"] {
+      width: calc(100% - 1.25rem);
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.4rem;
+      background-color: var(--dark-bg);
+      color: var(--text-light);
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .payment-box input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0.5rem rgba(233, 69, 96, 0.5);
+      outline: none;
+    }
+
+    .payment-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap; /* Allow buttons to wrap */
+    }
+
+    .payment-buttons button {
+      flex: none;
+      min-width: 7.5rem; /* 120px */
+    }
+
+    .payment-method-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem;
+      background-color: var(--card-bg);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+      margin-bottom: 1rem;
+      flex: 1;
+      max-width: 12.5rem; /* 200px */
+      border: 1px solid var(--border-color);
+    }
+
+    .payment-method-option:hover {
+      background-color: var(--border-color);
+      transform: translateY(-0.2rem);
+      box-shadow: 0 0.3rem 0.8rem rgba(0,0,0,0.5);
+    }
+
+    .payment-method-option img {
+      width: 5rem;
+      height: auto;
+      border-radius: 0.3rem;
+    }
+
+    .payment-method-option span {
+      font-weight: bold;
+      font-size: 1rem;
+      color: var(--text-light);
+    }
+
+    /* Custom Modal for Alerts */
+    .custom-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .custom-modal-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .custom-modal-content {
+        background-color: var(--card-bg);
+        padding: 2rem;
+        border-radius: 0.6rem;
+        box-shadow: 0 0.5rem 1.5rem var(--shadow-strong);
+        text-align: center;
+        max-width: 25rem; /* 400px */
+        width: 90%;
+        transform: translateY(-1.25rem);
+        transition: transform 0.3s ease;
+        border: 1px solid var(--primary-color);
+    }
+
+    .custom-modal-overlay.visible .custom-modal-content {
+        transform: translateY(0);
+    }
+
+    .custom-modal-content h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .custom-modal-content p {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-medium);
+    }
+
+    .custom-modal-content button {
+        background: linear-gradient(145deg, var(--primary-color), #c23b53);
+        color: var(--text-light);
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.4rem;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .custom-modal-content button:hover {
+        background: linear-gradient(145deg, #ff4f71, var(--primary-color));
+        transform: translateY(-0.1rem);
+    }
+
+    /* Styles for the animated payment modal */
+    #animatedPaymentModal .custom-modal-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #animatedLogo {
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 1rem;
+        animation: pulse 1.5s infinite alternate;
+        display: none; /* Hidden by default */
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      aside {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      aside nav {
+        flex-direction: column;
+        gap: 0.6rem;
+        width: 100%;
+      }
+      aside nav a {
+        width: 100%;
+        text-align: center;
+        padding: 0.6rem 0;
+      }
+      main {
+        padding: 1.5rem;
+        width: 95%;
+      }
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); /* Adjusted min-width for smaller screens */
+      }
+      .payment-buttons {
+        flex-direction: column;
+      }
+      .payment-method-option {
+        max-width: none;
+        width: 100%;
+      }
+      .product-detail-box {
+        flex-direction: column;
+      }
+      .product-detail-box .image-section,
+      .product-detail-box .details-section {
+        flex: 1 1 100%; /* Full width on small screens */
+        min-width: unset;
+      }
+      .product-detail-box .image-section {
+        order: -1; /* Image first on small screens */
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <aside>
+    <div class="logo-container" onclick="window.location.href='index.html'">
+      <h2>
+        <img src="https://i.ibb.co/C5hGKzFD/toppng-com-logo-hacker-650x650.png" alt="Hacker Logo" />
+        RUSSIAN MARKET
+      </h2>
+    </div>
+    <nav>
+      <a href="#" onclick="window.location.href='index.html'">Connected With Daraz</a>
+      <!-- Admin Page link removed from navigation -->
+    </nav>
+  </aside>
+
+  <main id="mainContent">
+    <div class="header-bar">
+      <div class="username" id="usernameDisplay">Welcome, Guest</div>
+      <button class="add-address-btn" onclick="addAddress()">Add Address</button>
+    </div>
+
+    <h1>Featured Products</h1>
+    <div class="product-grid" id="productGrid">
+      <!-- Products will be loaded here dynamically -->
+    </div>
+  </main>
+
+  <!-- Custom Alert Modal -->
+  <div id="customAlertModal" class="custom-modal-overlay">
+      <div class="custom-modal-content">
+          <h3 id="modalTitle"></h3>
+          <p id="modalMessage"></p>
+          <button onclick="hideModal()">OK</button>
+      </div>
+  </div>
+
+  <!-- New Animated Payment Modal -->
+  <div id="animatedPaymentModal" class="custom-modal-overlay">
+      <div class="custom-modal-content">
+          <img id="animatedLogo" src="https://i.ibb.co/C5hGKzFD/toppng-com-logo-hacker-650x650.png" alt="Logo">
+          <h3 id="animatedMessageTitle"></h3>
+          <p id="animatedMessageText"></p>
+      </div>
+  </div>
+
+  <script>
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1392105669406101524/5YVkU5dY0X-Sqgz2Legjls2D5fzOcoEORWBs1F6ljuLqVUKKpCj-0nd8w_xigTKB0bZf";
+    const WHATSAPP_NUMBER = "+923231798699"; // This number will no longer be shown in the final confirmation
+
+    // Particle effect
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 100;
+
+    // Adjust canvas size on load and resize
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        // Re-initialize particles if canvas size changes significantly
+        if (particles.length === 0 || particles.length !== particleCount) {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 0.5, // Smaller, more subtle particles
+                    color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.3})`, // Varied opacity
+                    speed: Math.random() * 0.8 + 0.2, // Slower speed
+                    direction: Math.random() * 2 * Math.PI
+                });
+            }
+        }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        p.x += Math.cos(p.direction) * p.speed;
+        p.y += Math.sin(p.direction) * p.speed;
+
+        if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
+          const edge = Math.floor(Math.random() * 4);
+          if (edge === 0) { p.x = Math.random() * canvas.width; p.y = 0; }
+          else if (edge === 1) { p.x = canvas.width; p.y = Math.random() * canvas.height; }
+          else { p.x = 0; p.y = Math.random() * canvas.height; } // Combined bottom and left for simplicity
+        }
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    // Default products - these will only be used if localStorage is empty
+    const defaultProducts = [
+      {
+        name: 'iPhone 11 Pro Max',
+        price: 25,
+        // Using a descriptive placeholder for the main image
+        image: 'https://placehold.co/200x180/1c1f26/f5f5f5?text=iPhone+11+Pro+Max',
+        description: 'The iPhone 11 Pro Max features a Super Retina XDR display, A13 Bionic chip, and a revolutionary triple-camera system for stunning photos and videos, even in low light.',
+        storageOptions: ['64GB', '256GB', '512GB'],
+        colorOptions: [
+          { name: 'Space Gray', image: 'https://placehold.co/50x50/36454F/FFFFFF?text=SG' },
+          { name: 'Silver', image: 'https://placehold.co/50x50/C0C0C0/000000?text=SL' },
+          { name: 'Gold', image: 'https://placehold.co/50x50/FFD700/000000?text=GD' },
+          { name: 'Midnight Green', image: 'https://placehold.co/50x50/5F7F70/FFFFFF?text=MG' }
+        ],
+        link: 'https://www.apple.com/iphone-11-pro/'
+      },
+      {
+        name: 'iPhone 12 Pro Max',
+        price: 30,
+        image: 'https://placehold.co/200x180/1c1f26/f5f5f5?text=iPhone+12+Pro+Max',
+        description: 'The iPhone 12 Pro Max boasts a Ceramic Shield front cover, A14 Bionic chip, and an advanced Pro camera system with LiDAR Scanner for incredible low-light performance and augmented reality.',
+        storageOptions: ['128GB', '256GB', '512GB'],
+        colorOptions: [
+          { name: 'Graphite', image: 'https://placehold.co/50x50/36454F/FFFFFF?text=GR' },
+          { name: 'Silver', image: 'https://placehold.co/50x50/C0C0C0/000000?text=SL' },
+          { name: 'Gold', image: 'https://placehold.co/50x50/FFD700/000000?text=GD' },
+          { name: 'Pacific Blue', image: 'https://placehold.co/50x50/0071C5/FFFFFF?text=PB' }
+        ],
+        link: 'https://www.apple.com/iphone-12-pro/'
+      },
+      {
+        name: 'iPhone 13 Pro Max',
+        price: 42,
+        image: 'https://placehold.co/200x180/1c1f26/f5f5f5?text=iPhone+13+Pro+Max',
+        description: 'iPhone 13 Pro Max features the super-fast A15 Bionic chip, a ProMotion XDR display with adaptive refresh rates, and a dramatically improved camera system for stunning photos and Cinematic mode videos.',
+        storageOptions: ['128GB', '256GB', '512GB', '1TB'],
+        colorOptions: [
+          { name: 'Graphite', image: 'https://placehold.co/50x50/36454F/FFFFFF?text=GR' },
+          { name: 'Gold', image: 'https://placehold.co/50x50/FFD700/000000?text=GD' },
+          { name: 'Silver', image: 'https://placehold.co/50x50/C0C0C0/000000?text=SL' },
+          { name: 'Sierra Blue', image: 'https://placehold.co/50x50/6699CC/FFFFFF?text=SB' },
+          { name: 'Alpine Green', image: 'https://placehold.co/50x50/5F7F70/FFFFFF?text=AG' }
+        ],
+        link: 'https://www.apple.com/iphone-13-pro/'
+      },
+      {
+        name: 'iPhone 14 Pro Max',
+        price: 45,
+        image: 'https://placehold.co/200x180/1c1f26/f5f5f5?text=iPhone+14+Pro+Max',
+        description: 'Experience the innovative Dynamic Island, Always-On display, and a groundbreaking 48MP Main camera. The iPhone 14 Pro Max redefines smartphone interaction and professional photography.',
+        storageOptions: ['128GB', '256GB', '512GB', '1TB'],
+        colorOptions: [
+          { name: 'Space Black', image: 'https://placehold.co/50x50/212121/FFFFFF?text=SB' },
+          { name: 'Silver', image: 'https://placehold.co/50x50/C0C0C0/000000?text=SL' },
+          { name: 'Gold', image: 'https://placehold.co/50x50/FFD700/000000?text=GD' },
+          { name: 'Deep Purple', image: 'https://placehold.co/50x50/5A2D6E/FFFFFF?text=DP' }
+        ],
+        link: 'https://www.apple.com/iphone-14-pro/'
+      },
+      {
+        name: 'iPhone 15 Pro Max',
+        price: 55,
+        image: 'https://placehold.co/200x180/1c1f26/f5f5f5?text=iPhone+15+Pro+Max',
+        description: 'Crafted from aerospace-grade titanium, the iPhone 15 Pro Max features the A17 Pro chip, a customizable Action Button, and the most advanced camera system with a 5x Telephoto lens.',
+        storageOptions: ['256GB', '512GB', '1TB'],
+        colorOptions: [
+          { name: 'Natural Titanium', image: 'https://placehold.co/50x50/8D8D8D/FFFFFF?text=NT' },
+          { name: 'Blue Titanium', image: 'https://placehold.co/50x50/2C3E50/FFFFFF?text=BT' },
+          { name: 'White Titanium', image: 'https://placehold.co/50x50/F5F5F5/000000?text=WT' },
+          { name: 'Black Titanium', image: 'https://placehold.co/50x50/212121/FFFFFF?text=BLT' }
+        ],
+        link: 'https://www.apple.com/iphone-15-pro/'
+      },
+      {
+        name: 'iPhone 16 Pro Max',
+        price: 63,
+        image: 'https://placehold.co/200x180/1c1f26/f5f5f5?text=iPhone+16+Pro+Max+Concept', /* Updated concept image placeholder */
+        description: 'Anticipate the next generation with the iPhone 16 Pro Max, featuring a rumored next-gen A-series chip, enhanced AI capabilities, and an even more immersive display. The future of smartphones is here.',
+        storageOptions: ['256GB', '512GB', '1TB', '2TB'],
+        colorOptions: [
+          { name: 'Phantom Black', image: 'https://placehold.co/50x50/212121/FFFFFF?text=PB' },
+          { name: 'Aurora White', image: 'https://placehold.co/50x50/F0F0F0/000000?text=AW' },
+          { name: 'Cosmic Blue', image: 'https://placehold.co/50x50/36454F/FFFFFF?text=CB' },
+          { name: 'Stardust Gold', image: 'https://placehold.co/50x50/B8860B/FFFFFF?text=SG' }
+        ],
+        link: '#' /* Placeholder link for future product */
+      }
+    ];
+
+    // Global variable to store initial main content HTML
+    let initialMainContentHTML = '';
+
+    // Function to load and display products on the main page
+    function loadProducts() {
+        let products = JSON.parse(localStorage.getItem("products"));
+        // Only use default products if localStorage is empty or malformed
+        if (!products || !Array.isArray(products) || products.length === 0 || !products[0].description) {
+            products = defaultProducts;
+            localStorage.setItem("products", JSON.stringify(products)); // Initialize localStorage with default products
+        }
+
+        const productGrid = document.getElementById('productGrid');
+        // Ensure productGrid exists before trying to modify its innerHTML
+        if (productGrid) {
+            productGrid.innerHTML = ''; // Clear existing products
+        } else {
+            console.error("Error: productGrid element not found. Cannot load products.");
+            return; // Exit if element is not found
+        }
+
+
+        products.forEach((product, index) => {
+            const productDiv = document.createElement('div');
+            productDiv.className = 'product';
+            productDiv.innerHTML = `
+                <a href="${product.link || '#'}" target="_blank">
+                    <img src="${product.image}" onerror="this.onerror=null; this.src='https://placehold.co/200x180/1c1f26/f5f5f5?text=Image+Error';" alt="${product.name}">
+                </a>
+                <h2>${product.name}</h2>
+                <p>$${product.price.toFixed(2)}</p>
+                <button onclick="showProductDetails(${index})">Buy Now</button>
+            `;
+            productGrid.appendChild(productDiv);
+        });
+    }
+
+    let currentOrderDetails = {}; // Store details temporarily for payment flow
+    let history = []; // To keep track of navigation states for 'back' button
+
+    // Custom Alert Modal Functions
+    function showModal(title, message) {
+        const modal = document.getElementById('customAlertModal');
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalMessage').innerText = message;
+        modal.classList.add('visible');
+    }
+
+    function hideModal() {
+        const modal = document.getElementById('customAlertModal');
+        modal.classList.remove('visible');
+    }
+
+    function navigateTo(htmlContent, stateData = null) {
+        const mainContent = document.getElementById('mainContent');
+        // Save current state before changing
+        history.push({
+            content: mainContent.innerHTML,
+            state: {
+                screen: stateData ? stateData.screen : 'unknown', // Capture current screen type
+                productIndex: stateData ? stateData.productIndex : undefined,
+                selectedStorage: currentOrderDetails.selectedStorage,
+                selectedColor: currentOrderDetails.selectedColor,
+                selectedColorImageUrl: currentOrderDetails.selectedColorImageUrl
+            }
+        });
+        mainContent.innerHTML = htmlContent;
+    }
+
+    function goBack() {
+        if (history.length > 0) {
+            const prevState = history.pop(); // Get previous state
+            const mainContent = document.getElementById('mainContent');
+            mainContent.innerHTML = prevState.content;
+
+            // Special handling for going back to the main product grid
+            if (prevState.state && prevState.state.screen === 'main') {
+                // Re-run the username setup for the main page
+                const usernameDisplayElement = document.getElementById("usernameDisplay");
+                if (usernameDisplayElement) {
+                    const user = localStorage.getItem('username');
+                    usernameDisplayElement.innerText = `Welcome, ${user || 'Guest'}`;
+                }
+                loadProducts(); // Reload products to ensure they are rendered
+            } else if (prevState.state && prevState.state.screen === 'productDetails') {
+                // If going back to product details, re-select options if they were set
+                const product = JSON.parse(localStorage.getItem("products"))[prevState.state.productIndex];
+                if (product) {
+                    currentOrderDetails = {
+                        product: product.name,
+                        price: product.price,
+                        selectedStorage: prevState.state.selectedStorage,
+                        selectedColor: prevState.state.selectedColor,
+                        selectedColorImageUrl: prevState.state.selectedColorImageUrl,
+                        originalProductIndex: prevState.state.productIndex
+                    };
+                    // Manually re-apply selected states to buttons
+                    setTimeout(() => { // Use a small timeout to ensure DOM is updated
+                        if (currentOrderDetails.selectedStorage) {
+                            selectStorage(currentOrderDetails.selectedStorage);
+                        }
+                        if (currentOrderDetails.selectedColor) {
+                            selectColor(currentOrderDetails.selectedColor, currentOrderDetails.selectedColorImageUrl);
+                        }
+                    }, 0);
+                }
+            }
+        } else {
+            showMain(); // Fallback to home if no history
+        }
+    }
+
+    function showProductDetails(productIndex) {
+        let products = JSON.parse(localStorage.getItem("products"));
+        const product = products[productIndex];
+
+        if (!product) {
+            showModal("Error", "Product not found.");
+            return;
+        }
+
+        // Initialize currentOrderDetails for this product
+        currentOrderDetails = {
+            product: product.name,
+            price: product.price,
+            selectedStorage: null,
+            selectedColor: null,
+            selectedColorImageUrl: product.image, // Default to main image
+            originalProductIndex: productIndex // Store index to retrieve full product object later
+        };
+
+        let storageOptionsHtml = '';
+        if (product.storageOptions && product.storageOptions.length > 0) {
+            storageOptionsHtml = `
+                <div class="option-group">
+                    <h3>Storage Capacity:</h3>
+                    <div class="options-container" id="storageOptionsContainer">
+                        ${product.storageOptions.map(storage => `
+                            <button class="option-button" onclick="selectStorage('${storage}')">${storage}</button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        let colorOptionsHtml = '';
+        if (product.colorOptions && product.colorOptions.length > 0) {
+            colorOptionsHtml = `
+                <div class="option-group">
+                    <h3>Color:</h3>
+                    <div class="options-container" id="colorOptionsContainer">
+                        ${product.colorOptions.map(color => `
+                            <div class="color-option" data-color-name="${color.name}" data-image-url="${color.image}" onclick="selectColor('${color.name}', '${color.image}')">
+                                <img src="${color.image}" onerror="this.onerror=null; this.src='https://placehold.co/50x50/1c1f26/f5f5f5?text=No';" alt="${color.name}">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        const productDetailPage = `
+            <div class="product-detail-box">
+                <div class="image-section">
+                    <img id="productDetailImage" src="${currentOrderDetails.selectedColorImageUrl}" onerror="this.onerror=null; this.src='https://placehold.co/400x300/1c1f26/f5f5f5?text=Image+Not+Found';" alt="${product.name}">
+                </div>
+                <div class="details-section">
+                    <h1>${product.name}</h1>
+                    <p class="price">$${product.price.toFixed(2)}</p>
+                    <p class="description">${product.description || 'No description available.'}</p>
+                    
+                    ${storageOptionsHtml}
+                    ${colorOptionsHtml}
+
+                    <div class="payment-buttons" style="justify-content: flex-start; margin-top: 2rem;">
+                        <button onclick="goBack()">Back to Products</button>
+                        <button onclick="continueToPaymentFromDetails()">Continue to Payment</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        navigateTo(productDetailPage, { screen: 'productDetails', productIndex: productIndex });
+    }
+
+    function selectStorage(storage) {
+        currentOrderDetails.selectedStorage = storage;
+        // Update UI for selected storage
+        const storageButtons = document.querySelectorAll('#storageOptionsContainer .option-button');
+        storageButtons.forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.innerText === storage) {
+                btn.classList.add('selected');
+            }
+        });
+    }
+
+    function selectColor(colorName, imageUrl) {
+        currentOrderDetails.selectedColor = colorName;
+        currentOrderDetails.selectedColorImageUrl = imageUrl;
+        // Update main product image
+        document.getElementById('productDetailImage').src = imageUrl;
+
+        // Update UI for selected color
+        const colorOptions = document.querySelectorAll('#colorOptionsContainer .color-option');
+        colorOptions.forEach(opt => {
+            opt.classList.remove('selected');
+            if (opt.dataset.colorName === colorName) {
+                opt.classList.add('selected');
+            }
+        });
+    }
+
+    function continueToPaymentFromDetails() {
+        const product = JSON.parse(localStorage.getItem("products"))[currentOrderDetails.originalProductIndex];
+
+        // Check if storage selection is required and made
+        if (product.storageOptions && product.storageOptions.length > 0 && !currentOrderDetails.selectedStorage) {
+            showModal("Selection Required", "Please select a storage capacity.");
+            return;
+        }
+
+        // Check if color selection is required and made
+        if (product.colorOptions && product.colorOptions.length > 0 && !currentOrderDetails.selectedColor) {
+            showModal("Selection Required", "Please select a color.");
+            return;
+        }
+
+        // Proceed to the original payment page logic
+        const paymentPage = `
+            <div class="payment-box">
+            <h1>Payment for ${currentOrderDetails.product}</h1>
+            <p>Price: $${currentOrderDetails.price.toFixed(2)}</p>
+            ${currentOrderDetails.selectedStorage ? `<p>Storage: <strong>${currentOrderDetails.selectedStorage}</strong></p>` : ''}
+            ${currentOrderDetails.selectedColor ? `<p>Color: <strong>${currentOrderDetails.selectedColor}</strong></p>` : ''}
+            <h2>Enter Your Address</h2>
+            <input type="text" id="addressInput" placeholder="Street Address" value="${localStorage.getItem('address') || ''}">
+            <input type="text" id="cityInput" placeholder="City">
+            <input type="text" id="provinceInput" placeholder="Province">
+            <input type="text" id="countryInput" placeholder="Country">
+            <h2>Your Information</h2>
+            <input type="text" id="nameInput" placeholder="Your Name">
+            <input type="tel" id="phoneInput" placeholder="Phone Number">
+            <input type="email" id="emailInput" placeholder="Email">
+            <div class="payment-buttons">
+                <button onclick="goBack()">Back</button>
+                <button onclick="continueToPayment()">Continue</button>
+            </div>
+            </div>
+        `;
+        navigateTo(paymentPage, { screen: 'buyNow', product: currentOrderDetails.product, price: currentOrderDetails.price });
+    }
+
+
+    function continueToPayment() {
+      // Collect user and address info
+      currentOrderDetails.address = document.getElementById('addressInput').value + ', ' +
+                                    document.getElementById('cityInput').value + ', ' +
+                                    document.getElementById('provinceInput').value + ', ' +
+                                    document.getElementById('countryInput').value;
+      currentOrderDetails.name = document.getElementById('nameInput').value;
+      currentOrderDetails.phone = document.getElementById('phoneInput').value;
+      currentOrderDetails.email = document.getElementById('emailInput').value;
+
+      if (!currentOrderDetails.address.split(',').some(part => part.trim() !== '') || !currentOrderDetails.name || !currentOrderDetails.phone || !currentOrderDetails.email) {
+          showModal("Missing Information", "Please fill in all your address and personal information.");
+          return;
+      }
+
+      const paymentDetails = `
+        <div class="payment-box">
+          <h2>Select Payment Method</h2>
+          <div style="display: flex; justify-content: center; gap: 1.25rem; flex-wrap: wrap;">
+            <div class="payment-method-option" onclick="selectPayment('Credit Card')">
+              <img src="https://static.vecteezy.com/system/resources/thumbnails/000/357/048/small_2x/3__2821_29.jpg" alt="Credit Card Logo">
+              <span>Credit Card</span>
+            </div>
+          </div>
+          <div class="payment-buttons">
+            <button onclick="goBack()">Back</button>
+          </div>
+        </div>
+      `;
+      navigateTo(paymentDetails, { screen: 'paymentMethodSelection' });
+    }
+
+    // Helper functions for credit card input formatting
+    function formatCardNumber(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove non-digits
+        value = value.replace(/(\d{4})(?=\d)/g, '$1 '); // Add space every 4 digits
+        input.value = value;
+    }
+
+    function formatExpiryDate(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove non-digits
+        if (value.length > 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        input.value = value;
+    }
+
+    async function selectPayment(method) {
+      currentOrderDetails.paymentMethod = method;
+      let paymentInstructions = '';
+
+      if (method === 'Credit Card') {
+        paymentInstructions = `
+          <div class="payment-box" id="creditCardPaymentBox">
+            <h3>${method} Transfer</h3>
+            <p>Please enter your credit card details.</p>
+            <input type="text" id="cardNumber" placeholder="Card Number (e.g., 1234 5678 9012 3456)" maxlength="19" oninput="formatCardNumber(this)" required>
+            <input type="text" id="expiryDate" placeholder="MM/YY (e.g., 12/25)" maxlength="5" oninput="formatExpiryDate(this)" required>
+            <input type="text" id="cvv" placeholder="CVV (e.g., 123)" maxlength="4" required>
+            <input type="text" id="cardHolderName" placeholder="Cardholder Name" required>
+            <div class="payment-buttons">
+              <button onclick="goBack()">Back</button>
+              <button onclick="processCreditCardPayment()">Pay Now</button>
+            </div>
+          </div>
+        `;
+      }
+      // Removed Easypaisa, JazzCash, Binance sections
+
+      navigateTo(paymentInstructions, { screen: 'receiptUpload', method: method });
+    }
+
+    async function uploadReceipt() {
+      // This function is now only relevant for non-credit card payments,
+      // but since only credit card is left, this function is effectively unused
+      // unless other payment methods are re-added.
+      // Keeping it for structural integrity, but its call path is removed.
+
+      const receiptFile = document.getElementById('receiptUploadInput').files[0];
+      let receiptPreviewUrl = '';
+
+      if (!receiptFile) {
+        showModal("Upload Required", 'Please upload a receipt to proceed.');
+        return;
+      }
+
+      const animatedModal = document.getElementById('animatedPaymentModal');
+      const animatedMessageTitle = document.getElementById('animatedMessageTitle');
+      const animatedMessageText = document.getElementById('animatedMessageText');
+      const animatedLogo = document.getElementById('animatedLogo');
+
+      animatedModal.classList.add('visible');
+      animatedLogo.style.display = 'block'; // Ensure logo is visible
+
+      animatedMessageTitle.innerText = "Processing Payment"; // Main title for the process
+      animatedMessageText.innerText = "Checking Your Details...";
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      animatedMessageText.innerText = "Checking Your Network Security...";
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      animatedMessageText.innerText = "Processing Your Payment...";
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      animatedModal.classList.remove('visible');
+      animatedLogo.style.display = 'none'; // Hide logo after animation
+
+      // Read the file as a Data URL for local preview
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+          receiptPreviewUrl = e.target.result; // Data URL for preview
+
+          const order = {
+            product: currentOrderDetails.product,
+            price: currentOrderDetails.price,
+            selectedStorage: currentOrderDetails.selectedStorage, // Include selected storage
+            selectedColor: currentOrderDetails.selectedColor,     // Include selected color
+            address: currentOrderDetails.address,
+            name: currentOrderDetails.name,
+            email: currentOrderDetails.email,
+            phone: currentOrderDetails.phone,
+            paymentMethod: currentOrderDetails.paymentMethod,
+            receiptImageUrl: receiptPreviewUrl, // Store Data URL for dashboard display (optional, can be removed if not used for display later)
+            receiptUploaded: true,
+            timestamp: new Date().toLocaleString()
+          };
+
+          const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+          orders.push(order);
+          localStorage.setItem("orders", JSON.stringify(orders));
+
+          // Pass the actual file object to the sendToDiscordWebhook function
+          await sendToDiscordWebhook(order, receiptFile);
+
+          const mainContent = document.getElementById('mainContent');
+          mainContent.innerHTML = `
+            <div class="payment-box">
+              <h2>Thank you for your purchase!</h2>
+              <p>Your order has been confirmed, it will be shifted soon. Please check your email.</p>
+              <div class="payment-buttons">
+                <button onclick="showMain()">Go to Home</button>
+              </div>
+            </div>
+          `;
+          history = []; // Clear history after successful order completion
+      };
+      reader.readAsDataURL(receiptFile); // Read file as Data URL
+    }
+
+    async function processCreditCardPayment() {
+        const cardNumber = document.getElementById('cardNumber').value.trim();
+        const expiryDate = document.getElementById('expiryDate').value.trim();
+        const cvv = document.getElementById('cvv').value.trim();
+        const cardHolderName = document.getElementById('cardHolderName').value.trim();
+
+        // Removed specific validation for cardNumber, expiryDate, cvv, cardHolderName.
+        // Only a basic check for empty fields remains.
+        if (!cardNumber || !expiryDate || !cvv || !cardHolderName) {
+            showModal("Missing Information", "Please fill in all credit card details.");
+            return;
+        }
+
+        const creditCardPaymentBox = document.getElementById('creditCardPaymentBox');
+        if (creditCardPaymentBox) {
+            creditCardPaymentBox.style.display = 'none'; // Hide the credit card details
+        }
+
+
+        const animatedModal = document.getElementById('animatedPaymentModal');
+        const animatedMessageTitle = document.getElementById('animatedMessageTitle');
+        const animatedMessageText = document.getElementById('animatedMessageText');
+        const animatedLogo = document.getElementById('animatedLogo');
+
+        animatedModal.classList.add('visible');
+        animatedLogo.style.display = 'block'; // Ensure logo is visible
+
+        animatedMessageTitle.innerText = "Processing Payment"; // Main title for the process
+        animatedMessageText.innerText = "Checking Your Details...";
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        animatedMessageText.innerText = "Checking Your Network Security...";
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        animatedMessageText.innerText = "Processing Your Payment...";
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        animatedModal.classList.remove('visible');
+        animatedLogo.style.display = 'none'; // Hide logo after animation
+
+        // Simulate successful payment after animation
+        const order = {
+            product: currentOrderDetails.product,
+            price: currentOrderDetails.price,
+            selectedStorage: currentOrderDetails.selectedStorage,
+            selectedColor: currentOrderDetails.selectedColor,
+            address: currentOrderDetails.address,
+            name: currentOrderDetails.name,
+            email: currentOrderDetails.email,
+            phone: currentOrderDetails.phone,
+            paymentMethod: currentOrderDetails.paymentMethod,
+            receiptUploaded: false, // No receipt file for credit card
+            timestamp: new Date().toLocaleString()
+        };
+
+        const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+        orders.push(order);
+        localStorage.setItem("orders", JSON.stringify(orders));
+
+        // For credit card payments, we won't send the actual card details to Discord.
+        // We'll send a simplified order confirmation without the receipt image.
+        await sendToDiscordWebhook(order, null); // Pass null for receiptFile
+
+        const mainContent = document.getElementById('mainContent');
+        mainContent.innerHTML = `
+            <div class="payment-box">
+              <h2>Thank you for your purchase!</h2>
+              <p>Your order has been confirmed, it will be shifted soon. Please check your email.</p>
+              <div class="payment-buttons">
+                <button onclick="showMain()">Go to Home</button>
+              </div>
+            </div>
+        `;
+        history = []; // Clear history after successful order completion
+    }
+
+    async function sendToDiscordWebhook(order, receiptFile) {
+        const embed = {
+            title: "New Order Received!",
+            description: `A new order has been placed for **${order.product}**`,
+            color: 15330000, // Hex color for red (#e94560)
+            fields: [
+                { name: "Product", value: order.product, inline: true },
+                { name: "Price", value: `$${order.price.toFixed(2)}`, inline: true },
+                // Add selected storage and color to Discord embed
+                { name: "Selected Storage", value: order.selectedStorage || "N/A", inline: true },
+                { name: "Selected Color", value: order.selectedColor || "N/A", inline: true },
+                { name: "Customer Name", value: order.name, inline: false },
+                { name: "Address", value: order.address, inline: false },
+                { name: "Email", value: order.email, inline: true },
+                { name: "Phone", value: order.phone, inline: true },
+                { name: "Payment Method", value: order.paymentMethod, inline: true },
+                { name: "Receipt Status", value: order.receiptUploaded ? "Receipt uploaded ✅" : "No receipt (Credit Card) 💳", inline: false },
+                { name: "Order Time", value: order.timestamp, inline: false }
+            ],
+            footer: {
+                text: "Russian Market Orders"
+            },
+            timestamp: new Date().toISOString()
+        };
+
+        const formData = new FormData();
+        formData.append('payload_json', JSON.stringify({ embeds: [embed] }));
+        if (receiptFile) {
+            formData.append('file', receiptFile); // Append the actual file
+        }
+
+        try {
+            const response = await fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                body: formData, // Use FormData for the body
+                // Do NOT set Content-Type header manually when using FormData, browser sets it
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Failed to send order to Discord:', response.status, response.statusText, errorText);
+                showModal("Discord Error", `Failed to send order details to Discord. Status: ${response.status}. Please check console for more details.`);
+            } else {
+                console.log('Order sent to Discord successfully!');
+            }
+        }
+        catch (error) {
+            console.error('Error sending order to Discord (network issue):', error);
+            showModal("Network Error", `Could not connect to Discord webhook. Please check your internet connection or the webhook URL.`);
+        }
+    }
+
+
+    function addAddress() {
+      const address = prompt("Enter your full address (Street, City, Province, Country):");
+      if (address) {
+        localStorage.setItem('address', address);
+        showModal("Address Added", "Address added successfully!");
+      }
+    }
+
+    function showMain() {
+      const mainContent = document.getElementById('mainContent');
+      // Restore the base structure of mainContent, ensuring productGrid exists
+      mainContent.innerHTML = `
+        <div class="header-bar">
+          <div class="username" id="usernameDisplay">Welcome, Guest</div>
+          <button class="add-address-btn" onclick="addAddress()">Add Address</button>
+        </div>
+
+        <h1>Featured Products</h1>
+        <div class="product-grid" id="productGrid">
+          <!-- Products will be loaded here dynamically -->
+        </div>
+      `;
+
+      // Re-set username display after restoring innerHTML
+      const usernameDisplayElement = document.getElementById("usernameDisplay");
+      if (usernameDisplayElement) {
+          const user = localStorage.getItem('username');
+          usernameDisplayElement.innerText = `Welcome, ${user || 'Guest'}`;
+      }
+
+      loadProducts(); // Now productGrid should always exist
+      history = []; // Clear history when navigating to main via menu
+    }
+
+    // Change username dynamically (example)
+    // This block runs only once on initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Capture the initial HTML of mainContent for later use in showMain()
+        // This must be done before any dynamic changes to mainContent.innerHTML
+        const mainContentElement = document.getElementById('mainContent');
+        if (mainContentElement) {
+            // We capture the innerHTML directly, as the outer `main` tag is static.
+            // This ensures we get the header-bar, h1, and product-grid divs.
+            initialMainContentHTML = mainContentElement.innerHTML;
+        }
+
+        resizeCanvas(); // Set initial canvas size
+        animateParticles(); // Start particle animation
+
+        // Set initial username based on localStorage or prompt
+        const user = localStorage.getItem('username');
+        if (user) {
+          document.getElementById("usernameDisplay").innerText = `Welcome, ${user}`;
+        } else {
+            const newUser = prompt("Welcome to Russian Market! Please enter your username:");
+            if (newUser) {
+                localStorage.setItem('username', newUser);
+                document.getElementById("usernameDisplay").innerText = `Welcome, ${newUser}`;
+            } else {
+                document.getElementById("usernameDisplay").innerText = `Welcome, Guest`;
+            }
+        }
+
+        // Redirect to admin.html if '/adminpage' is in the URL
+        if (window.location.href.toLowerCase().includes('/adminpage')) {
+            window.location.href = 'admin.html'; // Redirect to the dedicated admin page
+        } else {
+            showMain(); // Show main content by default, which now uses initialMainContentHTML
+        }
+    });
+
+    // Handle window resize for particles and responsiveness
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+    });
+  </script>
+</body>
+</html>
